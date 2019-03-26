@@ -49,6 +49,14 @@ def frequent_malfunction(df):
 def same_station(df):
     return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
 
+def model_city(df, city = 1):
+    if city == 1:
+        return df[(df.start_station_latitude > 37.697799) & (df.start_station_longitude <-122.330676)]
+    elif city == 2:
+        return df[(df.start_station_latitude > 37.697799) & (df.start_station_longitude >-122.330676)]
+    elif city == 3:
+        return df[df.start_station_latitude < 37.697799]
+        
 def trips_weather_combined(df1, df2):
     '''
     INPUT df1 is the trips dataframe
