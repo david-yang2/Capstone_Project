@@ -76,7 +76,8 @@ def trips_weather_combined(df1, df2):
     '''
 
 def get_dummies(df):
-    
+    '''
+    '''
     #start station dummies
     start_dummies = pd.get_dummies(df.start_station_name)
     #end station dummies
@@ -87,6 +88,17 @@ def get_dummies(df):
     return df
 
 def merge_dfs(df1, df2, column = 'date'):
+    '''
+    INPUT:
+    df1 = trips df
+    df2 = weather df
+
+    OUTPUT: combined df
+
+    '''
+    #weather dates are type str
+    #need to convert to datetime before we can merge with trips df
+    #because dates column in trips df is datetime
     df2[column] = pd.to_datetime(df2[column])
     df2[column] = df2[column].dt.date
     combined_df = pd.merge(df1,df2, on='date', how='left')
