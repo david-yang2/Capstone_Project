@@ -26,6 +26,7 @@ def feature_addition(df):
     #we make the assumption that its malfunctioned
     df['malfunction'] = (df.duration_sec < 90) & 
                         (df.start_station_name == df.end_station_name)
+    df['age'] = 2019 - df.member_birth_year
 
     return df
 
@@ -56,7 +57,7 @@ def model_city(df, city = 1):
         return df[(df.start_station_latitude > 37.697799) & (df.start_station_longitude >-122.330676)]
     elif city == 3:
         return df[df.start_station_latitude < 37.697799]
-        
+
 def trips_weather_combined(df1, df2):
     '''
     INPUT df1 is the trips dataframe
