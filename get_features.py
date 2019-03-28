@@ -37,3 +37,11 @@ def get_dummies(df):
     df = pd.concat([df,end_dummies], axis=1)
     
     return df
+
+def avg_duration_per_trip(df):
+    unique_start_sations = df.start_station_id.unique()
+    unique_end_stations = df.end_station_id.unique()
+    for s in unique_start_sations[:50]:
+        for e in unique_end_stations[:50]:
+            df['avg_duration'][(df.start_station_id == s) & (df.end_station_id == e)] = df[(df.start_station_id == s) & (df.end_station_id == e)]['duration_sec'].mean()
+        
