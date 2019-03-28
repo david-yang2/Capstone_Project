@@ -1,10 +1,20 @@
 import matplotlib.pyplot as plt
 
+#initial code
+
 
 def euclidean_distance(x, y):
     return np.sqrt(((x-y)**2).sum(axis=1))
 
 
+def coord_knn_dict(df):
+    #getting the coordinates from the dataset
+    coordinates = np.array(df[['end_station_longitude', 'end_station_latitude']])
+    unique_coords = np.unique(coordinates, axis = 0)
+    id_coord = {}
+    for u in unique_coords:
+        k = sf.end_station_id[(sf.end_station_longitude == u[0]) &(sf.end_station_latitude == u[1])].iloc[0]
+        id_coord[k] = u
 
 def knn_plot(df, s):
     
