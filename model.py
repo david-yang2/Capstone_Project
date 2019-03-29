@@ -15,3 +15,10 @@ def rf_score(df):
     clf.fit(X_train, y_train)   
     mean_score = cross_val_score(clf,X_test, y_test ).mean()
     return mean_score
+
+def score(X_test, y_test):
+    predictions = clf.predict(X_test)
+    score = 0
+    for pre in range(predictions.shape[0]):
+        if np.array(y_test)[pre][1] in knn_dict.get(predictions[pre]):
+            score+=1
