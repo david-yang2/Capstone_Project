@@ -19,6 +19,7 @@ def feature_addition(df):
     df['date'] = df.start_time.dt.date
     df['year'] = df.start_time.dt.year
     df['month'] = df.start_time.dt.month
+    df['day'] = df.start_time.dt.day
     df['hour'] = df.start_time.dt.hour
 
     #any trip with less than 90 seconds and where
@@ -50,7 +51,7 @@ def same_station(df):
     return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
 
 def month_sep(df, year, month):
-    return df[(df.year == 2017) & (df.month == 6)]
+    return df[(df.year == year) & (df.month == month)]
 
 def model_city(df, city = 1):
     '''
