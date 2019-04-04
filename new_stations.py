@@ -78,6 +78,6 @@ def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
             knn_id = df1.start_station_id[(df1.start_station_longitude == neighbors[i][0]) &(df1.start_station_latitude == neighbors[i][1])].iloc[0]
             v.append(int(knn_id))
         knn_dict[int(p)] = v
-    return knn_dict
+    return knn_dict, id_coord_df1
 
 

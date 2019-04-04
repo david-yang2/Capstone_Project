@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-def days_for_ts(df, cdf), hist=3):
+def days_for_ts(df, cdf, hist=3):
     cm = cdf.month.unique()[0]
     cy = cdf.year.unique()[0]
 
