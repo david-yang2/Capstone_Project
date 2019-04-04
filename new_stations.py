@@ -53,7 +53,7 @@ def stn_coords(df):
     id_coord = {}
     for u in unique_coords:
         k = df.start_station_id[(df.start_station_longitude == u[0]) &(df.start_station_latitude == u[1])].iloc[0]
-        id_coord[k] = u
+        id_coord[int(k)] = u
     return id_coord
 
 
@@ -75,23 +75,9 @@ def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
 #         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
         v = []
         for i in range(num_neighbors):
-            knn_id = df.start_station_id[(df.start_station_longitude == neighbors[i][0]) &(df.start_station_latitude == neighbors[i][1])].iloc[0]
-            v.append(knn_id)
-        knn_dict[p] = v
+            knn_id = df1.start_station_id[(df1.start_station_longitude == neighbors[i][0]) &(df1.start_station_latitude == neighbors[i][1])].iloc[0]
+            v.append(int(knn_id))
+        knn_dict[int(p)] = v
     return knn_dict
 
-def days_for_ts(df, cdf):
-    cm = cdf.month.unique()[0]
-    tsdf = df_2017[(df_2017.month <=cm) & (df_2017.month>cm-3)]
-    tsdf['days'] = 1
-    months = np.sort(tsdf.month.unique())
-    for idx, mon in enumerate(months):
-        mult = idx+1
-        tsdf['days'][tsdf.month == mon] = tsdf.day * mult
-    return tsdf
 
-def plt_stn(df, station_id):
-    tsplt = df['days'][df.end_station_id == station_id].value_counts().reset_index()
-    tsplt = np.array(tsplt)
-    tsplt = tsplt[np.argsort(tsplt[:,0])]
-    plt.plot(tsplt[:,0], tsplt[:,1])
