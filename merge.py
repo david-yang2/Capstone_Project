@@ -3,10 +3,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 
-trips = pd.read_csv("data/201812-fordgobike-tripdata.csv")
-weather = pd.read_csv('data/weather.csv')
-
-
 def num_malfunctions(df):
     '''
     INPUT: Dataframe with a "malfunction" column
@@ -27,23 +23,6 @@ def frequent_malfunction(df):
 def same_station(df):
     return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
 
-def model_city(df, city = 1):
-    '''
-    Breaks the dataset into 3 cities
-    SF = 1
-    OAK = 2
-    SJ = 3
-
-    INPUT: Dataframe
-           Number for city to be modeled
-    OUTPUT: returns a portion of the original dataframe
-    ''' 
-    if city == 1:
-        return df[(df.start_station_latitude > 37.697799) & (df.start_station_longitude <-122.330676)]
-    elif city == 2:
-        return df[(df.start_station_latitude > 37.697799) & (df.start_station_longitude >-122.330676)]
-    elif city == 3:
-        return df[df.start_station_latitude < 37.697799]
 
 def trips_weather_combined(df1, df2):
     '''

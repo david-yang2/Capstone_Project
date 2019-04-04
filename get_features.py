@@ -2,6 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+def load_data():
+    data = pd.read_csv('data/master-fordgobike-tripdata')
+    data.drop(["Unnamed: 0"],axis=1, inplace=True)
+    weather = pd.read_csv('data/weather.csv')
+    return data, weather
+
 def feature_addition(df):
     '''
     INPUT dataframe
@@ -51,7 +57,9 @@ def same_station(df):
     return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
 
 def month_sep(df, year, month):
-    return df[(df.year == year) & (df.month == month)]
+    cdf = df[(df.year == year) & (df.month == month)]
+    ndf = df[(df.year == year) & (df.month == (month-1))]
+    return cdf, ndf
 
 def model_city(df, city = 1):
     '''

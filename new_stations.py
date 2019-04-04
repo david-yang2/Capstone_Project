@@ -2,10 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from get_features import *
+from merge import*
 
 
-
-
+def month_sep(df, year, month):
+    cdf = df[(df.year == year) & (df.month == month)]
+    ndf = df[(df.year == year) & (df.month == (month-1))]
+    return cdf, ndf
 
 def unique_stations(df):
     '''
@@ -24,17 +27,23 @@ def unique_stations(df):
     unique_end_stations = df.end_station_id.unique()
     return unique_start_sations
 
-def new_stn_coords(old_stn, new_stn):
+def new_stn_coords(df1, df2):
     '''
     INPUT: 2 lists. 1 list of new station ids
                     1 list of old station ids
     '''
-    new_stn = set(new_stn) - set(old_stn)
-    lst_new = list(new_stn)
+
+    new_stn = unique_stations(df2)
+    curr_stn = unique_stations(df1)
+    ps = set(new_stn) - set(curr_stn)
+    lst_new = list(ps)
     return lst_new
 
 
 def stn_coords(df):
+    '''
+    returns a dictionary with all station_id and coordinate combinations
+    '''
     #getting the coordinates from the dataset
     coordinates = np.array(df[['start_station_longitude', 'start_station_latitude']])
     unique_coords = np.unique(coordinates, axis = 0)
@@ -52,13 +61,13 @@ def euclidean_distance(x, y):
     return np.sqrt(((x-y)**2).sum(axis=1))
 
 
-def knn_proposed_stn(df, df2, proposed_stn, num_neighbors = 3):
+def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
     
 
-    coordinates = np.array(df[['start_station_longitude', 'start_station_latitude']])
+    coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
     unique_coords = np.unique(coordinates, axis = 0)
     #get the id and coords for current month
-    id_coord_df = stn_coords(df)
+    id_coord_df1 = stn_coords(df1)
     id_coord_df2 = stn_coords(df2)
     knn_dict = {}
     for p in proposed_stn:
@@ -70,3 +79,19 @@ def knn_proposed_stn(df, df2, proposed_stn, num_neighbors = 3):
             v.append(knn_id)
         knn_dict[p] = v
     return knn_dict
+
+def days_for_ts(df, cdf):
+    cm = cdf.month.unique()[0]
+    tsdf = df_2017[(df_2017.month <=cm) & (df_2017.month>cm-3)]
+    tsdf['days'] = 1
+    months = np.sort(tsdf.month.unique())
+    for idx, mon in enumerate(months):
+        mult = idx+1
+        tsdf['days'][tsdf.month == mon] = tsdf.day * mult
+    return tsdf
+
+def plt_stn(df, station_id):
+    tsplt = df['days'][df.end_station_id == station_id].value_counts().reset_index()
+    tsplt = np.array(tsplt)
+    tsplt = tsplt[np.argsort(tsplt[:,0])]
+    plt.plot(tsplt[:,0], tsplt[:,1])
