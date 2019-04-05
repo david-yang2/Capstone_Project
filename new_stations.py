@@ -65,19 +65,24 @@ def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
     
     #all coordinates for each trip
     coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
-    
     #unique coords in df1
     unique_coords = np.unique(coordinates, axis = 0)
-
     #get the id and coords for current month
     id_coord_df1 = stn_coords(df1)
     id_coord_df2 = stn_coords(df2)
     knn_dict = {}
     for p in proposed_stn:
-        
-        
-        neighbors = unique_coords[np.argsort(euclidean_distance(id_coord_df2.get(p), unique_coords))][1:num_neighbors+1]
-#         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
+        dist = euclidean_distance(id_coord_df2.get(p), unique_coords)
+        potential_neighbors = unique_coords[np.argsort(dist)]
+        neighbors = np.array([0,0])
+        for pot in potential_neighbors:
+            sid = qtr.start_station_id[(qtr.start_station_longitude==pot[0])&(qtr.start_station_latitude==pot[1])].unique()[0]
+            if len(qtr.days[qtr.start_station_id==sid].unique())>10:
+                neighbors = np.vstack((neighbors, pot))
+        neighbors = neighbors[1:num_neighbors+1]
+
+
+    #         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
         v = []
         for i in range(num_neighbors):
             knn_id = df1.start_station_id[(df1.start_station_longitude == neighbors[i][0]) &(df1.start_station_latitude == neighbors[i][1])].iloc[0]

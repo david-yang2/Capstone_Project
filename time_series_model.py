@@ -58,14 +58,42 @@ def plt_stn():
 
 def ARIMA_pred(arr, p=3, d=1, q=0):
     tseries = pd.Series(arr[:,1])
-    test = sm.tsa.stattools.adfuller(tseries)
-    trip_matrix = tseries.as_matrix()
-    trip_model = ARIMA(trip_matrix, order=(p, d, q)).fit()
     
-    sze = len(tseries)
-    predictions = trip_model.predict(sze, sze+30, typ='levels')
-    test = np.append(trip_matrix, predictions)
-    test1 = pd.Series(test)
-    plt.plot(test1.index[:sze], test1[:sze])
-    plt.plot(test1.index[sze:], test1[sze:])
-    return predictions
+    tscv = TimeSeriesSplit(n_splits=3)
+    fig = plt.figure(figsize=(10,10))
+    index = 1
+    
+    actual = []
+    
+    for train_index, test_index in tscv.split(tseries):
+        train = tseries[train_index]
+        test = tseries[test_index]
+
+        train_matrix = train.as_matrix()
+        a_model = ARIMA(train_matrix, order=(p, d, q)).fit()
+    
+        train_sze = len(train)
+        predictions = trip_model.predict(train_sze, train_sze+len(test)-1, typ='levels')
+        
+        #calculate mean squared error
+        mse = mean_squared_error(predictions, np.array(test))
+        
+        #combine to plot on same graph
+        combined = np.append(trip_matrix, predictions)
+        combined = pd.Series(combined)
+        plt.subplot(3,1,index)
+        plt.xlabel('Days')
+        plt.ylabel('Trip Counts')
+        plt.title('This has a mean squared error of {}'.format(mse))
+        plt.plot(combined.index[:train_sze], combined[:train_sze])
+        plt.plot(combined.index[train_sze:], combined[train_sze:])
+#         plt.plot(test)
+        print (np.array(test))
+#         print(len(train_index))
+#         print (test_index)
+        print (predictions)
+        
+        index +=1
+        
+
+
