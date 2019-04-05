@@ -6,8 +6,10 @@ from merge import*
 
 
 def month_sep(df, year, month):
+    #current month
     cdf = df[(df.year == year) & (df.month == month)]
-    ndf = df[(df.year == year) & (df.month == (month-1))]
+    #next month
+    ndf = df[(df.year == year) & (df.month == (month+1))]
     return cdf, ndf
 
 def unique_stations(df):
@@ -61,7 +63,7 @@ def euclidean_distance(x, y):
     return np.sqrt(((x-y)**2).sum(axis=1))
 
 
-def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
+def knn_proposed_stn(qtr, df1, df2, proposed_stn, num_neighbors = 3):
     
     #all coordinates for each trip
     coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
@@ -85,9 +87,9 @@ def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
     #         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
         v = []
         for i in range(num_neighbors):
-            knn_id = df1.start_station_id[(df1.start_station_longitude == neighbors[i][0]) &(df1.start_station_latitude == neighbors[i][1])].iloc[0]
+            knn_id = qtr.start_station_id[(qtr.start_station_longitude == neighbors[i][0]) &(qtr.start_station_latitude == neighbors[i][1])].iloc[0]
             v.append(int(knn_id))
         knn_dict[int(p)] = v
-    return knn_dict, id_coord_df1
+    return knn_dict, id_coord_df1, id_coord_df2
 
 

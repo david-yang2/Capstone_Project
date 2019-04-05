@@ -73,11 +73,18 @@ def model_city(df, city = 1):
     OUTPUT: returns a portion of the original dataframe
     ''' 
     if city == 1:
-        return df[(df.end_station_latitude > 37.697799) & (df.end_station_longitude <-122.330676)]
+        return df[(df.end_station_latitude > 37.697799)     \
+                & (df.end_station_longitude <-122.330676)   \
+                & (df.start_station_latitude > 37.697799)   \
+                & (df.start_station_longitude <-122.330676)]
     elif city == 2:
-        return df[(df.end_station_latitude > 37.697799) & (df.end_station_longitude >-122.330676)]
+        return df[(df.end_station_latitude > 37.697799)     \
+            & (df.end_station_longitude >-122.330676)       \
+            & (df.start_station_longitude >-122.330676)     \
+            & (df.start_station_longitude >-122.330676)]
     elif city == 3:
-        return df[df.end_station_latitude < 37.697799]
+        return df[(df.end_station_latitude < 37.697799)     \
+            & (df.end_station_latitude < 37.697799)]
 
 
 def get_dummies(df):
