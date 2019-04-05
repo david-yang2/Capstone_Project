@@ -63,14 +63,19 @@ def euclidean_distance(x, y):
 
 def knn_proposed_stn(df1, df2, proposed_stn, num_neighbors = 3):
     
-
+    #all coordinates for each trip
     coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
+    
+    #unique coords in df1
     unique_coords = np.unique(coordinates, axis = 0)
+
     #get the id and coords for current month
     id_coord_df1 = stn_coords(df1)
     id_coord_df2 = stn_coords(df2)
     knn_dict = {}
     for p in proposed_stn:
+        
+        
         neighbors = unique_coords[np.argsort(euclidean_distance(id_coord_df2.get(p), unique_coords))][1:num_neighbors+1]
 #         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
         v = []

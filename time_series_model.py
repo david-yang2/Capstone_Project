@@ -55,3 +55,17 @@ def plt_stn():
             plt.plot(ts[:,0],ts[:,1])
             num+=1
             graph+=1
+
+def ARIMA_pred(arr, p=3, d=1, q=0):
+    tseries = pd.Series(arr[:,1])
+    test = sm.tsa.stattools.adfuller(tseries)
+    trip_matrix = tseries.as_matrix()
+    trip_model = ARIMA(trip_matrix, order=(p, d, q)).fit()
+    
+    sze = len(tseries)
+    predictions = trip_model.predict(sze, sze+30, typ='levels')
+    test = np.append(trip_matrix, predictions)
+    test1 = pd.Series(test)
+    plt.plot(test1.index[:sze], test1[:sze])
+    plt.plot(test1.index[sze:], test1[sze:])
+    return predictions
