@@ -196,7 +196,7 @@ def baseline(neighbors, sub):
 
 def validate(sub, neighbors, trend, ndf):
     
-    agg = np.array([0,0,0])
+    agg = np.array([0,0,0,0])
     base = baseline(neighbors,sub)
     #validate the stations in the trend dictionary
     for k, v in trend.items():
@@ -208,13 +208,13 @@ def validate(sub, neighbors, trend, ndf):
         count = ndf[ndf.end_station_id == k]["day"].value_counts()
         actual_trips_per_day = np.round(np.array(count).mean(), decimals = 3)
 
-        store = np.array([base.get(k), neighbor_mean, actual_trips_per_day])
+        store = np.array([k, base.get(k), neighbor_mean, actual_trips_per_day])
         agg = np.vstack((agg, store))
         print ("Validating for station {}".format(k))
         print ("The baseline estimate using the mean for neighboring station is {}".format(base.get(k)))
         print ("The average predicted trip count per day is {}.".format(neighbor_mean)) 
         print ("The actual trips per day for the following month is {}.".format(actual_trips_per_day))
         print ("----------------------------------------------------------------")
-    return agg[1:].mean(axis = 0)
+    return agg[1:]
 
 
