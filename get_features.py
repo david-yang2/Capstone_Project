@@ -94,8 +94,9 @@ def subset_df(df, year, month, hist=3):
     
     #create a days column
     #this will be used to forecast as well as plotting
+    # sub['days'] = pd.to_datetime(df['days'])
     sub['days'] = (sub.date) - sub.date.min()
-    sub['days'] = sub['days'].dt.days
+    # sub['days'] = sub['days'].dt.days
 
     return sub, cdf, ndf
 
