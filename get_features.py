@@ -61,7 +61,7 @@ def feature_addition(df):
     #we make the assumption that its malfunctioned
     df['malfunction'] = (df.duration_sec < 90) & (df.start_station_name == df.end_station_name)
     df['age'] = 2019 - df.member_birth_year
-
+    
     return df
 
 def subset_df(df, year, month, hist=3):
@@ -70,6 +70,8 @@ def subset_df(df, year, month, hist=3):
     OUTPUT subsetted historical df, current month's df, next month's df
     '''
 
+    #remove trips where start station is the same as end station
+    df = df[df.start_station_id != df.end_station_id]
 
     #current month df
     cdf = df[(df.year == year) & (df.month == month)]
@@ -94,9 +96,10 @@ def subset_df(df, year, month, hist=3):
     
     #create a days column
     #this will be used to forecast as well as plotting
-    # sub['days'] = pd.to_datetime(df['days'])
+    sub['days'] = 1
+    sub['days'] = pd.to_datetime(sub['days'])
     sub['days'] = (sub.date) - sub.date.min()
-    # sub['days'] = sub['days'].dt.days
+    sub['days'] = sub['days'].dt.days
 
     return sub, cdf, ndf
 

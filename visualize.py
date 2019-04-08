@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 
 #initial code
 
-def plt_stn():
+def plt_stn(neighbors):
     row_sze = len(neighbors)
     col_sze = len(next(iter(neighbors.values())))
     rnge = row_sze*col_sze
