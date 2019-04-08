@@ -8,6 +8,31 @@ def load_data():
     weather = pd.read_csv('data/weather.csv')
     return data, weather
 
+def model_city(df, city = 1):
+    '''
+    Breaks the dataset into 3 cities
+    SF = 1
+    OAK = 2
+    SJ = 3
+
+    INPUT: Dataframe
+           Number for city to be modeled
+    OUTPUT: returns a portion of the original dataframe
+    ''' 
+    if city == 1:
+        return df[(df.end_station_latitude > 37.697799)     \
+                & (df.end_station_longitude <-122.330676)   \
+                & (df.start_station_latitude > 37.697799)   \
+                & (df.start_station_longitude <-122.330676)]
+    elif city == 2:
+        return df[(df.end_station_latitude > 37.697799)     \
+            & (df.end_station_longitude >-122.330676)       \
+            & (df.start_station_longitude >-122.330676)     \
+            & (df.start_station_longitude >-122.330676)]
+    elif city == 3:
+        return df[(df.end_station_latitude < 37.697799)     \
+            & (df.end_station_latitude < 37.697799)]
+
 def feature_addition(df):
     '''
     INPUT dataframe
@@ -36,55 +61,43 @@ def feature_addition(df):
 
     return df
 
-def num_malfunctions(df):
-    '''
-    INPUT: Dataframe with a "malfunction" column
-    Sum the number of malfunctions up
-    OUTPUT: Tuple with 
-            first element as number of malfunctions and
-            second element as number of non-malfunctions
-    '''
-
-    num_malfunctions = df.malfunction.sum()
-    num_working = len(df.malfunction) - num_malfunctions
-
-    return (num_malfunctions, num_working)
-
-def frequent_malfunction(df):
-    return df.bike_id[df.malfunction == True].value_counts()
-
-def same_station(df):
-    return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
-
-def month_sep(df, year, month):
+def subset_df(df, year, month, hist=3):
+    #current month df
     cdf = df[(df.year == year) & (df.month == month)]
-    ndf = df[(df.year == year) & (df.month == (month-1))]
-    return cdf, ndf
+    #next month df
+    ndf = df[(df.year == year) & (df.month == (month+1))]
 
-def model_city(df, city = 1):
-    '''
-    Breaks the dataset into 3 cities
-    SF = 1
-    OAK = 2
-    SJ = 3
+    #create a new dataframe
+    #which includes the current month's data
+    #as well as data from previous months
+    
+    rollover = month-hist
+    if rollover <0:
+        lyear = year-1
+        lmonth = 12+(rollover)+1
+        dfu= df[(df.year == year)&(df.month <=month)]
+        dfl= df[(df.year == lyear)&(df.month >=lmonth)]
+        tsdf = dfu.append(dfl)
+    else:
+        tsdf = df[(df.year == year)&(df.month <=month) & (df.month>=month-hist)]
 
-    INPUT: Dataframe
-           Number for city to be modeled
-    OUTPUT: returns a portion of the original dataframe
-    ''' 
-    if city == 1:
-        return df[(df.end_station_latitude > 37.697799)     \
-                & (df.end_station_longitude <-122.330676)   \
-                & (df.start_station_latitude > 37.697799)   \
-                & (df.start_station_longitude <-122.330676)]
-    elif city == 2:
-        return df[(df.end_station_latitude > 37.697799)     \
-            & (df.end_station_longitude >-122.330676)       \
-            & (df.start_station_longitude >-122.330676)     \
-            & (df.start_station_longitude >-122.330676)]
-    elif city == 3:
-        return df[(df.end_station_latitude < 37.697799)     \
-            & (df.end_station_latitude < 37.697799)]
+    #create a new column called days and give it an arbitrary number
+    #we will adjust it later
+    tsdf['days'] = 1
+
+
+    #sort the months by ascending order
+    months = np.sort(tsdf.month.unique())
+
+
+    #create a multiplier based on months
+    for idx, mon in enumerate(months):
+        mult = idx+1
+        #scale the days with the multiplier
+        tsdf['days'][tsdf.month == month] = tsdf.day * mult
+    return tsdf, cdf, ndf
+
+
 
 
 def get_dummies(df):
