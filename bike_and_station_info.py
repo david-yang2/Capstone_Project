@@ -13,10 +13,10 @@ def unique_stations(df):
     OUTPUT: 1 array of unique start station ids
   
     '''
-    #names of each start station and the number of trips 
+    #start station name/id and the number of trips for that station
     lst_start_station_name = df.start_station_name.value_counts()
-    #ids of each start station and the number of trips 
     lst_start_station_id = df.start_station_id.value_counts()
+
     num_unique_stations = lst_start_station_id.unique().size
     unique_start_sations = df.start_station_id.unique()
     unique_end_stations = df.end_station_id.unique()
@@ -51,6 +51,80 @@ def stn_coords(df):
         id_coord[int(k)] = u
     return id_coord
 
+
+
+def euclidean_distance(x, y):
+    return np.sqrt(((x-y)**2).sum(axis=1))
+
+
+def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
+    '''
+    INPUT 3 dataframes, subsetted df, current month's df, and next month's df
+            as well as the number of desired neighbors
+    OUTPUT dict of knn, dict for id and coordinate combinations for each current and next month
+
+
+    '''
+
+    #all coordinates for each trip
+    coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
+    
+    #unique coords in df1
+    unique_coords = np.unique(coordinates, axis = 0)
+    
+    #current month
+    cm = df1.month.unique()[0]
+    
+    #get the id and coords for current month
+    id_coord_df1 = stn_coords(df1)
+    id_coord_df2 = stn_coords(df2)
+    
+    knn_dict = {}
+    
+    #iterate through each proposed station
+    for p in proposed_stn:
+        
+        #use euclidean_distance to find distances between each point
+        dist = euclidean_distance(id_coord_df2.get(p), unique_coords)
+        
+        #sort the distances from closest to furthest
+        potential_neighbors = unique_coords[np.argsort(dist)]
+        
+        neighbors = np.array([0,0])
+        
+        #in the list of potential neighbors, use neighbors with more than 30 days of trips
+        for pot in potential_neighbors:
+            
+            #get the station id
+            sid = sub.start_station_id[(sub.start_station_longitude==pot[0])\
+                                       &(sub.start_station_latitude==pot[1])].unique()[0]
+#             if len(cdf.days[cdf.start_station_id==sid].unique())>10:
+            if len(sub.days[(sub.start_station_id==sid) \
+                            & (sub.month == cm)].unique())>10:
+                neighbors = np.vstack((neighbors, pot))
+        neighbors = neighbors[1:num_neighbors+1]
+        
+        #list for storing neighboring station ids
+        neighbor_ids = []
+        for i in range(num_neighbors):
+            knn_id = sub.start_station_id[(sub.start_station_longitude == neighbors[i][0]) &(sub.start_station_latitude == neighbors[i][1])].iloc[0]
+            neighbor_ids.append(int(knn_id))
+        knn_dict[int(p)] = neighbor_ids
+    return knn_dict, id_coord_df1, id_coord_df2
+
+
+def trips_per_day(df, station_id):
+    '''
+    number of trips per day, given a station id
+    INPUT: df and station id
+    OUTPUT: sorted array of trip counts by date
+    '''
+    tseries = df['days'][df.end_station_id == station_id].value_counts().reset_index()
+    tseries = np.array(df)
+    tseries = tseries[np.argsort(tseries[:,0])]
+    return tseries
+
+
 def num_malfunctions(df):
     '''
     INPUT: Dataframe with a "malfunction" column
@@ -66,43 +140,10 @@ def num_malfunctions(df):
     return (num_malfunctions, num_working)
 
 def frequent_malfunction(df):
+    '''
+    Returns the bike id and number of times it "malfunctioned" in a given period
+    '''
     return df.bike_id[df.malfunction == True].value_counts()
 
 def same_station(df):
     return df.bike_id[df.start_station_name == df.end_station_name].value_counts()
-
-
-def euclidean_distance(x, y):
-    return np.sqrt(((x-y)**2).sum(axis=1))
-
-
-def knn_proposed_stn(qtr, df1, df2, proposed_stn, num_neighbors = 3):
-    
-    #all coordinates for each trip
-    coordinates = np.array(df1[['start_station_longitude', 'start_station_latitude']])
-    #unique coords in df1
-    unique_coords = np.unique(coordinates, axis = 0)
-    #get the id and coords for current month
-    id_coord_df1 = stn_coords(df1)
-    id_coord_df2 = stn_coords(df2)
-    knn_dict = {}
-    for p in proposed_stn:
-        dist = euclidean_distance(id_coord_df2.get(p), unique_coords)
-        potential_neighbors = unique_coords[np.argsort(dist)]
-        neighbors = np.array([0,0])
-        for pot in potential_neighbors:
-            sid = qtr.start_station_id[(qtr.start_station_longitude==pot[0])&(qtr.start_station_latitude==pot[1])].unique()[0]
-            if len(qtr.days[qtr.start_station_id==sid].unique())>10:
-                neighbors = np.vstack((neighbors, pot))
-        neighbors = neighbors[1:num_neighbors+1]
-
-
-    #         k = df.start_station_id[(df.start_station_longitude == id_coord_df2.get(p)[0]) &(df.start_station_latitude == id_coord_df2.get(p)[1])].iloc[0]
-        v = []
-        for i in range(num_neighbors):
-            knn_id = qtr.start_station_id[(qtr.start_station_longitude == neighbors[i][0]) &(qtr.start_station_latitude == neighbors[i][1])].iloc[0]
-            v.append(int(knn_id))
-        knn_dict[int(p)] = v
-    return knn_dict, id_coord_df1, id_coord_df2
-
-

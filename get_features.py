@@ -1,8 +1,11 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 
 def load_data():
+
+    #load all data
     data = pd.read_csv('data/master-fordgobike-tripdata')
     data.drop(["Unnamed: 0"],axis=1, inplace=True)
     weather = pd.read_csv('data/weather.csv')
@@ -19,16 +22,21 @@ def model_city(df, city = 1):
            Number for city to be modeled
     OUTPUT: returns a portion of the original dataframe
     ''' 
+
+    #san francisco
     if city == 1:
         return df[(df.end_station_latitude > 37.697799)     \
                 & (df.end_station_longitude <-122.330676)   \
                 & (df.start_station_latitude > 37.697799)   \
                 & (df.start_station_longitude <-122.330676)]
+    #oakland
     elif city == 2:
         return df[(df.end_station_latitude > 37.697799)     \
             & (df.end_station_longitude >-122.330676)       \
             & (df.start_station_longitude >-122.330676)     \
             & (df.start_station_longitude >-122.330676)]
+
+    #san jose
     elif city == 3:
         return df[(df.end_station_latitude < 37.697799)     \
             & (df.end_station_latitude < 37.697799)]
@@ -38,20 +46,15 @@ def feature_addition(df):
     INPUT dataframe
     OUTPUT dataframe with extra features
     '''
-    #create a new column that shows the day of week for each trip
-    #need to transform panda series to datetime
-    #before we can use .dt.dayofweek
-    #monday = 0 and sunday = 6
 
-    df.start_time = pd.to_datetime(df.start_time)
-
-    df['day_of_week'] = df.start_time.dt.dayofweek
-
-    df['date'] = df.start_time.dt.date
-    df['year'] = df.start_time.dt.year
-    df['month'] = df.start_time.dt.month
-    df['day'] = df.start_time.dt.day
-    df['hour'] = df.start_time.dt.hour
+    #dissect the end time column using datetime
+    df.end_time = pd.to_datetime(df.end_time)
+    df['day_of_week'] = df.end_time.dt.dayofweek
+    df['date'] = df.end_time.dt.date
+    df['year'] = df.end_time.dt.year
+    df['month'] = df.end_time.dt.month
+    df['day'] = df.end_time.dt.day
+    df['hour'] = df.end_time.dt.hour
 
     #any trip with less than 90 seconds and where
     #start station IS the end station,
@@ -62,6 +65,12 @@ def feature_addition(df):
     return df
 
 def subset_df(df, year, month, hist=3):
+    '''
+    INPUT df, month and year you wish to assess
+    OUTPUT subsetted historical df, current month's df, next month's df
+    '''
+
+
     #current month df
     cdf = df[(df.year == year) & (df.month == month)]
     #next month df
@@ -69,7 +78,7 @@ def subset_df(df, year, month, hist=3):
 
     #create a new dataframe
     #which includes the current month's data
-    #as well as data from previous months
+    #as well as X months of history
     
     rollover = month-hist
     if rollover <0:
@@ -77,25 +86,18 @@ def subset_df(df, year, month, hist=3):
         lmonth = 12+(rollover)+1
         dfu= df[(df.year == year)&(df.month <=month)]
         dfl= df[(df.year == lyear)&(df.month >=lmonth)]
-        tsdf = dfu.append(dfl)
+        sub = dfu.append(dfl)
     else:
-        tsdf = df[(df.year == year)&(df.month <=month) & (df.month>=month-hist)]
-
-    #create a new column called days and give it an arbitrary number
-    #we will adjust it later
-    tsdf['days'] = 1
+        sub = df[(df.year == year)&(df.month <=month) & (df.month>=month-hist)]
 
 
-    #sort the months by ascending order
-    months = np.sort(tsdf.month.unique())
+    
+    #create a days column
+    #this will be used to forecast as well as plotting
+    sub['days'] = (sub.date) - sub.date.min()
+    sub['days'] = sub['days'].dt.days
 
-
-    #create a multiplier based on months
-    for idx, mon in enumerate(months):
-        mult = idx+1
-        #scale the days with the multiplier
-        tsdf['days'][tsdf.month == month] = tsdf.day * mult
-    return tsdf, cdf, ndf
+    return sub, cdf, ndf
 
 
 
