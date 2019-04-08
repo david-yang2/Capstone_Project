@@ -120,7 +120,7 @@ def trips_per_day(df, station_id):
     OUTPUT: sorted array of trip counts by date
     '''
     tseries = df['days'][df.end_station_id == station_id].value_counts().reset_index()
-    tseries = np.array(df)
+    tseries = np.array(tseries)
     tseries = tseries[np.argsort(tseries[:,0])]
     return tseries
 
