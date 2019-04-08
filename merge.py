@@ -2,6 +2,45 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+def subset_df(df, year, month, hist=3):
+    #current month df
+    cdf = df[(df.year == year) & (df.month == month)]
+    #next month df
+    ndf = df[(df.year == year) & (df.month == (month+1))]
+
+    #create a new dataframe
+    #which includes the current month's data
+    #as well as data from previous months
+    
+    rollover = month-hist
+    if rollover <0:
+        lyear = year-1
+        lmonth = 12+(rollover)+1
+        dfu= df[(df.year == year)&(df.month <=month)]
+        dfl= df[(df.year == lyear)&(df.month >=lmonth)]
+        tsdf = dfu.append(dfl)
+    else:
+        tsdf = df[(df.year == year)&(df.month <=month) & (df.month>=month-hist)]
+
+    #create a new column called days and give it an arbitrary number
+    #we will adjust it later
+    tsdf['days'] = 1
+
+
+    #sort the months by ascending order
+    months = np.sort(tsdf.month.unique())
+
+
+    #create a multiplier based on months
+    for idx, mon in enumerate(months):
+        mult = idx+1
+        #scale the days with the multiplier
+        tsdf['days'][tsdf.month == month] = tsdf.day * mult
+    return tsdf, cdf, ndf
+
+
+
+
 
 def num_malfunctions(df):
     '''
