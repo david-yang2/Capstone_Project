@@ -79,8 +79,11 @@ def ARIMA_pred(arr, p=1, d=1, q=1):
     plt.xlabel('Days')
     plt.ylabel('Trip Counts')
     plt.title('This has a root mean squared error of {}'.format(rmse))
+    #plot train
     plt.plot(combined.index[:train_sze], combined[:train_sze], 'g', label = "train")
+    #plot prediction
     plt.plot(combined.index[train_sze:], combined[train_sze:], 'r', label =  "prediction")
+    #plot actual
     plt.plot(tseries.index[train_sze:], tseries[train_sze:], 'b', label = "actual")
     plt.legend(loc='upper left')
 
@@ -115,7 +118,7 @@ def best_params(score):
     return best_params
 
 
-def forecast_nxt_30d(ts, b_params, months=3):
+def forecast_nxt_30d(ts, b_params, station_id, months=3):
     tseries = pd.Series(ts[:,1])
     p = int(b_params[0][0])
     d = int(b_params[0][1])
@@ -133,11 +136,14 @@ def forecast_nxt_30d(ts, b_params, months=3):
     combined = pd.Series(combined)
     plt.xlabel('Days')
     plt.ylabel('Trip Counts')
-#     plt.title('This has a mean squared error of {}'.format(mse))
-    plt.plot(combined.index[:train_sze], combined[:train_sze], label="train")
-    plt.plot(combined.index[train_sze:], combined[train_sze:], label='predicted')
+    plt.title("This is the forecasted trips per day for neighboring station {}.".format(station_id))
+    # plt.plot(combined.index[:train_sze], combined[:train_sze])
+    # plt.plot(combined.index[train_sze:], combined[train_sze:])
     plt.legend(loc='upper left')
     
+    plt.plot(combined.index[:train_sze], combined[:train_sze], 'g', label = "train")
+    plt.plot(combined.index[train_sze:], combined[train_sze:], 'r', label =  "prediction")
+    plt.plot(tseries.index[train_sze:], tseries[train_sze:], 'b', label = "actual")
     next_month_avg_pred = predictions.mean()
     return next_month_avg_pred
 
@@ -190,6 +196,7 @@ def baseline(neighbors, sub):
 
 def validate(sub, neighbors, trend, ndf):
     
+    agg = np.array([0,0,0])
     base = baseline(neighbors,sub)
     #validate the stations in the trend dictionary
     for k, v in trend.items():
@@ -201,12 +208,13 @@ def validate(sub, neighbors, trend, ndf):
         count = ndf[ndf.end_station_id == k]["day"].value_counts()
         actual_trips_per_day = np.round(np.array(count).mean(), decimals = 3)
 
-        
+        store = np.array([base.get(k), neighbor_mean, actual_trips_per_day])
+        agg = np.vstack((agg, store))
         print ("Validating for station {}".format(k))
         print ("The baseline estimate using the mean for neighboring station is {}".format(base.get(k)))
         print ("The average predicted trip count per day is {}.".format(neighbor_mean)) 
         print ("The actual trips per day for the following month is {}.".format(actual_trips_per_day))
         print ("----------------------------------------------------------------")
-
+    return agg[1:].mean(axis = 0)
 
 
