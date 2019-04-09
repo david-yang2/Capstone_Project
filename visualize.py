@@ -13,8 +13,8 @@ def plt_stn(neighbors):
         for s_id in v:
             plt.subplot(rnge,1,graph)
             plt.subplots_adjust(top=10, bottom =5)
-            plt.xlabel("days")
-            plt.ylabel("trips per day")
+            plt.xlabel("Days", size="20")
+            plt.ylabel("Daily Trip Counts", size="20")
             plt.title("This is station {}, and it is neighbor #{} for station {}".format(s_id, num, k))
             ts = trips_per_day(sub, s_id)
             plt.plot(ts[:,0],ts[:,1])
@@ -42,11 +42,11 @@ def plt_neighbors(cdf, neighbors, coords):
         plt.xlabel("Longitude")
         plt.ylabel("Latitude")
         plt.title("Map of Ford GoBike stations in San Francisco")
-        plt.scatter(cdf.end_station_longitude, cdf.end_station_latitude, s=1, c=('r'))
-        plt.scatter(coords.get(k)[0], coords.get(k)[1], s=50, marker='x', c=('b'))
+        plt.scatter(cdf.end_station_longitude, cdf.end_station_latitude, size=1, c=('r'))
+        plt.scatter(coords.get(k)[0], coords.get(k)[1], size=50, marker='x', c=('b'))
 
         for st in neighbors.get(k):
-            plt.scatter(coords.get(st)[0],coords.get(st)[1], s= 20, c='g')
+            plt.scatter(coords.get(st)[0],coords.get(st)[1], size= 20, c='g')
         plt.show()
 
 def plt_original_results(results):
