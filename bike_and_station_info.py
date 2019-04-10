@@ -99,8 +99,7 @@ def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
             sid = sub.start_station_id[(sub.start_station_longitude==pot[0])\
                                        &(sub.start_station_latitude==pot[1])].unique()[0]
 #             if len(cdf.days[cdf.start_station_id==sid].unique())>10:
-            if len(sub.days[(sub.start_station_id==sid) \
-                            & (sub.month == cm)].unique())>10:
+            if len(sub.days[(sub.start_station_id==sid) & (sub.month == cm)].unique())>20:
                 neighbors = np.vstack((neighbors, pot))
         neighbors = neighbors[1:num_neighbors+1]
         

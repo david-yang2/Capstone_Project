@@ -78,9 +78,18 @@ def subset_df(df, year, month, hist=3):
     #next month df
     ndf = df[(df.year == year) & (df.month == (month+1))]
 
-    #create a new dataframe
-    #which includes the current month's data
-    #as well as X months of history
+    excess = (month+3)-12
+    if excess >0:
+        uyear = year+1
+        umonth = excess
+        ndfu = df[(df.year == uyear)&(df.month <=umonth)]
+        ndfl = df[(df.year == year)&(df.month >=month)]
+        ntmdf = ndfu.append(ndfl)
+    else:
+        ntmdf = df[(df.year == year) & (df.month >= month+1)& (df.month <= month+3)] 
+    # create a new dataframe
+    # which includes the current month's data
+    # as well as X months of history
     
     rollover = month-hist
     if rollover <0:
@@ -90,7 +99,7 @@ def subset_df(df, year, month, hist=3):
         dfl= df[(df.year == lyear)&(df.month >=lmonth)]
         sub = dfu.append(dfl)
     else:
-        sub = df[(df.year == year)&(df.month <=month) & (df.month>=month-hist)]
+        sub = df[(df.year == year)&(df.month <=month) & (df.month>month-hist)]
 
 
     
@@ -101,7 +110,7 @@ def subset_df(df, year, month, hist=3):
     sub['days'] = (sub.date) - sub.date.min()
     sub['days'] = sub['days'].dt.days
 
-    return sub, cdf, ndf
+    return sub, cdf, ndf, ntmdf
 
 
 

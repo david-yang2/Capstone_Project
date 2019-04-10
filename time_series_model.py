@@ -77,7 +77,7 @@ def ARIMA_pred(arr, p=1, d=1, q=1):
 
 
     plt.xlabel('Days')
-    plt.ylabel('Trip Counts')
+    plt.ylabel('Daily Trip Counts')
     plt.title('This has a root mean squared error of {}'.format(rmse))
     #plot train
     plt.plot(combined.index[:train_sze], combined[:train_sze], 'g', label = "train")
@@ -148,6 +148,63 @@ def forecast_nxt_30d(ts, b_params, station_id, months=3):
     return next_month_avg_pred
 
 
+
+    
+
+def baseline(neighbors, sub):
+    '''
+    Use the average trips per day for the baseline for my model
+    '''
+    avg_count = {}
+    for k, v in neighbors.items():
+        avg_lst = []
+        for s_id in v:
+            avg = np.array(sub.days[sub.end_station_id == s_id].value_counts()).mean()
+            avg_lst.append(avg)
+        avg = np.array(avg_lst).mean()
+        avg_count[k] = avg
+    return avg_count
+
+def validate(sub, neighbors, trend, ndf, ntmdf):
+    
+    agg = np.array([0,0,0,0])
+    base = baseline(neighbors,sub)
+    #validate the stations in the trend dictionary
+    for k, v in trend.items():
+        
+        #mean of forecasted values
+        neighbor_mean = v.mean()
+        
+        month = int(sub[sub.start_time == sub.start_time.max()].month)
+        year = int(sub[sub.start_time == sub.start_time.max()].year)
+        new = int(ntmdf[ntmdf.start_time == ntmdf.start_time.min()].month)
+        # #using the following two month's data to calculate actual trips per day
+        # excess = (month+2)-12
+
+        # if excess >0:
+        #     uyear = year+1
+        #     umonth = excess
+        #     ndfu = df[(df.year == uyear)&(df.month <=umonth)]
+        #     ndfl = df[(df.year == year)&(df.month >=month)]
+        #     ndf = ndfu.append(ndfl)
+        # else:
+        #     ndf = df[(df.year == year) & (df.month == month+1)& (df.month == month+2)] 
+        ntmdf['days'] = 1
+        ntmdf['days'] = pd.to_datetime(ntmdf['days'])
+        ntmdf['days'] = (ntmdf.date) - ntmdf.date.min()
+        ntmdf['days'] = ntmdf['days'].dt.days
+        count = ntmdf[(ntmdf.end_station_id == k)]["days"].value_counts()
+        actual_trips_per_day = np.round(np.array(count).mean(), decimals = 3)
+
+        store = np.array([k, base.get(k), neighbor_mean, actual_trips_per_day])
+        agg = np.vstack((agg, store))
+        print ("Validating for station {}".format(k))
+        print ("The baseline estimate using the mean for neighboring station is {}".format(base.get(k)))
+        print ("The average predicted trip count per day is {}.".format(neighbor_mean)) 
+        print ("The actual trips per day for the following month is {}.".format(actual_trips_per_day))
+        print ("----------------------------------------------------------------")
+    return agg[1:]
+
 def station_trends(ts, b_params):
     # #stores the proposed location's stations id and its neighbors' overall average trip count per day
     # trend = {}
@@ -178,43 +235,5 @@ def station_trends(ts, b_params):
         print ("Combination did not work")
         # neigh_avg = np.array(avg_temp)
         # trend[k] = neigh_avg
-    
-
-def baseline(neighbors, sub):
-    '''
-    Use the average trips per day for the baseline for my model
-    '''
-    avg_count = {}
-    for k, v in neighbors.items():
-        avg_lst = []
-        for s_id in v:
-            avg = np.array(sub.days[sub.end_station_id == s_id].value_counts()).mean()
-            avg_lst.append(avg)
-        avg = np.array(avg_lst).mean()
-        avg_count[k] = avg
-    return avg_count
-
-def validate(sub, neighbors, trend, ndf):
-    
-    agg = np.array([0,0,0,0])
-    base = baseline(neighbors,sub)
-    #validate the stations in the trend dictionary
-    for k, v in trend.items():
-        
-        #mean of forecasted values
-        neighbor_mean = v.mean()
-        
-        #using the following month's data to calculate actual trips per day
-        count = ndf[ndf.end_station_id == k]["day"].value_counts()
-        actual_trips_per_day = np.round(np.array(count).mean(), decimals = 3)
-
-        store = np.array([k, base.get(k), neighbor_mean, actual_trips_per_day])
-        agg = np.vstack((agg, store))
-        print ("Validating for station {}".format(k))
-        print ("The baseline estimate using the mean for neighboring station is {}".format(base.get(k)))
-        print ("The average predicted trip count per day is {}.".format(neighbor_mean)) 
-        print ("The actual trips per day for the following month is {}.".format(actual_trips_per_day))
-        print ("----------------------------------------------------------------")
-    return agg[1:]
 
 
