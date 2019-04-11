@@ -151,7 +151,7 @@ def forecast_nxt_30d(ts, b_params, station_id, months=3):
 
     
 
-def baseline(baseline_neighbors, sub):
+def baseline(baseline_neighbors, sub,seasonal_trend):
     '''
     Use the average trips per day for the baseline for my model
     '''
@@ -159,7 +159,12 @@ def baseline(baseline_neighbors, sub):
     for k, v in baseline_neighbors.items():
         avg_lst = []
         for s_id in v:
-            avg = np.array(sub.days[sub.end_station_id == s_id].value_counts()).mean()
+#detrend baseline            
+            raw_data = np.array(sub.days[sub.end_station_id == s_id].value_counts())
+            detrended_baseline = raw_data - seasonal_trend
+            avg = detrended_baseline.mean()
+# #regular baseline
+#             avg = np.array(sub.days[sub.end_station_id == s_id].value_counts()).mean()
             avg_lst.append(avg)
         avg = np.array(avg_lst).mean()
         avg_count[k] = avg

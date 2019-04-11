@@ -162,8 +162,8 @@ def trips_per_day(df, station_id):
     #create our series
     series = grouped['days']
     #get dummie variables
-    day = series.index.day
-    dummies = pd.get_dummies(day).iloc[:, :29]
+    day = series.index.dayofweek
+    dummies = pd.get_dummies(day).iloc[:, :6]
 
     #predict seasonal trend
     X = sm.add_constant(dummies.values)
@@ -173,8 +173,8 @@ def trips_per_day(df, station_id):
     #subtract seasonal trend from original
     detrended_series = np.array(series).T - seasonal_trend
     tseries = np.array(pd.Series(detrended_series).reset_index())
-
-    return tseries
+    print(seasonal_trend.size,station_id)
+    return tseries,seasonal_trend
 
 
 def num_malfunctions(df):
