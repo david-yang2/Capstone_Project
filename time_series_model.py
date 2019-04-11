@@ -46,7 +46,7 @@ def ARIMA_pred(arr, p=1, d=1, q=1):
     
     tseries = pd.Series(arr[:,1])
 #     tseries = stationary_convert(tseries)
-    tscv = TimeSeriesSplit(n_splits=3)
+    tscv = TimeSeriesSplit(n_splits=2)
     fig = plt.figure(figsize=(10,10))
     index = 1
     

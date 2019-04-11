@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from get_features import *
-
+import statsmodels.api as sm
 
 
 def unique_stations(df):
@@ -105,7 +105,7 @@ def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
 #             if len(cdf.days[cdf.start_station_id==sid].unique())>10:
             baseline_neighbors = np.vstack((neighbors, pot))
 
-            if len(sub.days[(sub.start_station_id==sid) & (sub.month == cm)].unique())>25:
+            if len(sub.day[(sub.start_station_id==sid) & (sub.month == cm)].unique())>25:
                 neighbors = np.vstack((neighbors, pot))
 
         neighbors = neighbors[1:num_neighbors+1]
@@ -135,9 +135,45 @@ def trips_per_day(df, station_id):
     INPUT: df and station id
     OUTPUT: sorted array of trip counts by date
     '''
-    tseries = df['days'][df.end_station_id == station_id].value_counts().reset_index()
-    tseries = np.array(tseries)
-    tseries = tseries[np.argsort(tseries[:,0])]
+#regular time series data
+    # tseries = df['days'][df.end_station_id == station_id].value_counts().reset_index()
+    # tseries = np.array(tseries)
+    # tseries = tseries[np.argsort(tseries[:,0])]
+
+
+#detrend by subtracting average from data
+    # data = df['days'][df.end_station_id == station_id].value_counts().reset_index()
+    # average = np.array(data.iloc[:,1]).mean()
+    # data['diff'] = data.days - average
+    # test_s = data.drop('days', axis=1)
+    # diff_arr = np.array(test_s)
+    # # diff_arr[:,1][diff_arr[:,1]<0] = 0
+    # tseries = diff_arr[np.argsort(diff_arr[:,0])]
+
+#detrend by seasonality
+    original_df = df[['end_time','days']][df.end_station_id == station_id]
+    #change end_time to datetime
+    original_df['end_time']= pd.to_datetime(original_df.end_time)
+    #group trips by date and count 
+    #end time becomes index
+    grouped = original_df.groupby(original_df.end_time.dt.date).count()
+    #change index to datetime
+    grouped.index = pd.to_datetime(grouped.index)
+    #create our series
+    series = grouped['days']
+    #get dummie variables
+    day = series.index.day
+    dummies = pd.get_dummies(day).iloc[:, :29]
+
+    #predict seasonal trend
+    X = sm.add_constant(dummies.values)
+    seasonal_model = sm.OLS(series.values, X).fit()
+    seasonal_trend = seasonal_model.predict(X)
+
+    #subtract seasonal trend from original
+    detrended_series = np.array(series).T - seasonal_trend
+    tseries = np.array(pd.Series(detrended_series).reset_index())
+
     return tseries
 
 
