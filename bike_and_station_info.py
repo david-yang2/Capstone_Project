@@ -80,6 +80,7 @@ def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
     id_coord_df2 = stn_coords(df2)
     
     knn_dict = {}
+    baseline_knn = {}
     
     #iterate through each proposed station
     for p in proposed_stn:
@@ -91,6 +92,8 @@ def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
         potential_neighbors = unique_coords[np.argsort(dist)]
         
         neighbors = np.array([0,0])
+        baseline_neighbors = np.array([0,0])
+       
         
         #in the list of potential neighbors, use neighbors with more than 30 days of trips
         for pot in potential_neighbors:
@@ -98,18 +101,32 @@ def knn_proposed_stn(sub, df1, df2, proposed_stn, num_neighbors = 3):
             #get the station id
             sid = sub.start_station_id[(sub.start_station_longitude==pot[0])\
                                        &(sub.start_station_latitude==pot[1])].unique()[0]
+
 #             if len(cdf.days[cdf.start_station_id==sid].unique())>10:
-            if len(sub.days[(sub.start_station_id==sid) & (sub.month == cm)].unique())>10:
+            baseline_neighbors = np.vstack((neighbors, pot))
+
+            if len(sub.days[(sub.start_station_id==sid) & (sub.month == cm)].unique())>25:
                 neighbors = np.vstack((neighbors, pot))
+
         neighbors = neighbors[1:num_neighbors+1]
+        baseline_neighbors = baseline_neighbors[1:num_neighbors+1]
+
+
+        #list for storing neighboring station ids
+        baseline_neighbor_ids = []
+        for i in range(num_neighbors):
+            baseline_knn_id = sub.start_station_id[(sub.start_station_longitude == baseline_neighbors[i][0]) &(sub.start_station_latitude == baseline_neighbors[i][1])].iloc[0]
+            baseline_neighbor_ids.append(int(baseline_knn_id))
         
         #list for storing neighboring station ids
         neighbor_ids = []
         for i in range(num_neighbors):
             knn_id = sub.start_station_id[(sub.start_station_longitude == neighbors[i][0]) &(sub.start_station_latitude == neighbors[i][1])].iloc[0]
             neighbor_ids.append(int(knn_id))
+
         knn_dict[int(p)] = neighbor_ids
-    return knn_dict, id_coord_df1, id_coord_df2
+        baseline_knn[int(p)]= baseline_neighbor_ids
+    return knn_dict, baseline_knn, id_coord_df1, id_coord_df2
 
 
 def trips_per_day(df, station_id):

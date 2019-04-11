@@ -76,16 +76,16 @@ def ARIMA_pred(arr, p=1, d=1, q=1):
 
 
 
-    plt.xlabel('Days')
-    plt.ylabel('Daily Trip Counts')
-    plt.title('This has a root mean squared error of {}'.format(rmse))
-    #plot train
-    plt.plot(combined.index[:train_sze], combined[:train_sze], 'g', label = "train")
-    #plot prediction
-    plt.plot(combined.index[train_sze:], combined[train_sze:], 'r', label =  "prediction")
-    #plot actual
-    plt.plot(tseries.index[train_sze:], tseries[train_sze:], 'b', label = "actual")
-    plt.legend(loc='upper left')
+    # plt.xlabel('Days')
+    # plt.ylabel('Daily Trip Counts')
+    # plt.title('This has a root mean squared error of {}'.format(rmse))
+    # #plot train
+    # plt.plot(combined.index[:train_sze], combined[:train_sze], 'g', label = "train")
+    # #plot prediction
+    # plt.plot(combined.index[train_sze:], combined[train_sze:], 'r', label =  "prediction")
+    # #plot actual
+    # plt.plot(tseries.index[train_sze:], tseries[train_sze:], 'b', label = "actual")
+    # plt.legend(loc='upper left')
 
 
     avg_rmse = mean_rmse.mean()
@@ -151,12 +151,12 @@ def forecast_nxt_30d(ts, b_params, station_id, months=3):
 
     
 
-def baseline(neighbors, sub):
+def baseline(baseline_neighbors, sub):
     '''
     Use the average trips per day for the baseline for my model
     '''
     avg_count = {}
-    for k, v in neighbors.items():
+    for k, v in baseline_neighbors.items():
         avg_lst = []
         for s_id in v:
             avg = np.array(sub.days[sub.end_station_id == s_id].value_counts()).mean()
@@ -165,10 +165,10 @@ def baseline(neighbors, sub):
         avg_count[k] = avg
     return avg_count
 
-def validate(sub, neighbors, trend, ndf, ntmdf):
+def validate(sub, neighbors,baseline_neighbors, trend, ndf, ntmdf):
     
     agg = np.array([0,0,0,0])
-    base = baseline(neighbors,sub)
+    base = baseline(baseline_neighbors,sub)
     #validate the stations in the trend dictionary
     for k, v in trend.items():
         
