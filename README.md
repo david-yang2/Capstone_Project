@@ -14,15 +14,21 @@ Process
 3) Forecast next month’s average daily trip count for new Ford GoBike stations as the overall average forecasts for neighboring stations
 
 Results:
+
 • Baseline RMSE of 19.91
+
 • Forecast RMSE of 16.29
+
 • I believe the large RMSE in both baseline and forecast was due to exogenous factors which I have not incorporated yet
 
 Exogenous Factors
+
 •	Emergence of new dock less scooter / bike programs such as Scoot, Jump, and Skip
 
 Next Steps:
+
 •	Apply my model to the East Bay and San Jose
+
 •	Incorporate data from new scooter/bike programs into my existing model
 
 
