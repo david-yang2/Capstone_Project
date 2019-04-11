@@ -193,7 +193,7 @@ def validate(sub, neighbors, trend, ndf, ntmdf):
         ntmdf['days'] = pd.to_datetime(ntmdf['days'])
         ntmdf['days'] = (ntmdf.date) - ntmdf.date.min()
         ntmdf['days'] = ntmdf['days'].dt.days
-        count = ntmdf[(ntmdf.end_station_id == k)]["days"].value_counts()
+        count = ndf[(ndf.end_station_id == k)]["day"].value_counts()
         actual_trips_per_day = np.round(np.array(count).mean(), decimals = 3)
 
         store = np.array([k, base.get(k), neighbor_mean, actual_trips_per_day])
