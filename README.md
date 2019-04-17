@@ -2,7 +2,7 @@ Forecast next month’s average daily trip count for new Ford GoBike Stations
 
 Context:
 
-San Francisco has an extensive public transportation network; however, traffic congestion in city has gotten increasingly worse. 
+San Francisco has an extensive public transportation network; however, traffic congestion in city has gotten exponentially worse. 
 Bike share programs such as Ford GoBike offers users an alternative to traditional public transportation. 
 Data for this project was collected from the company’s website. 
 The goal of the project is to help the company with their expansion plans by using trip data to forecast how much traffic a new dock station is expected to receive.
